@@ -1,20 +1,42 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Retail Agenten-Dashboard
 
-# Run and deploy your AI Studio app
+Ein React-basiertes Dashboard für E-Commerce-Operationen, das den Gemini API-Agenten integriert.
 
-This contains everything you need to run your app locally.
+## Voraussetzungen
+- Node.js (v20 oder neuer empfohlen)
+- npm
+- Ein Gemini API Key
 
-View your app in AI Studio: https://ai.studio/apps/2e8d7600-0c3a-49d7-951c-f699d334ea63
+## Setup & Lokale Entwicklung
 
-## Run Locally
+1. Repository klonen und in das Verzeichnis wechseln.
+2. Kopieren Sie die `.env.example` zu `.env` und fügen Sie Ihren Gemini API Key ein:
+   ```bash
+   cp .env.example .env
+   ```
+3. Abhängigkeiten installieren:
+   ```bash
+   npm install
+   ```
+4. Entwicklungsserver starten:
+   ```bash
+   npm run dev
+   ```
+   Die Anwendung ist dann unter `http://localhost:3000` erreichbar.
 
-**Prerequisites:**  Node.js
+## Docker Nutzung
 
+Sie können die Anwendung auch mit Docker ausführen:
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+```bash
+docker-compose up --build
+```
+Die Anwendung wird auf Port 3000 gestartet. Stellen Sie sicher, dass Ihre `.env` Datei existiert.
+
+## Windows One-Click Start
+
+Für Windows-Nutzer gibt es eine `start.bat` Datei. Ein Doppelklick darauf installiert die Abhängigkeiten und startet den Server automatisch. Falls noch keine `.env` Datei existiert, wird diese aus der `.env.example` erstellt.
+
+## Fehlerbehebung
+- **Fehlender API-Key**: Wenn der Agent nicht antwortet, prüfen Sie, ob der `GEMINI_API_KEY` in der `.env` korrekt gesetzt ist.
+- **Port-Konflikte**: Der Standardport ist 3000. Falls dieser belegt ist, können Sie ihn in der `package.json` anpassen.
