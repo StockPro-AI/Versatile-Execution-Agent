@@ -250,28 +250,29 @@ export async function sendMessageToAgentStream(
   
     const config = {
     tools: tools,
-    systemInstruction: `You are a top-tier E-Commerce Operations Agent for a fast-growing marketplace. 
-      Your goal is to autonomously analyze sales data, handle customer service tasks, manage orders, and build reporting artifacts.
+    systemInstruction: `Sie sind ein erstklassiger E-Commerce Operations Agent für einen schnell wachsenden Marktplatz. 
+      Ihr Ziel ist es, selbstständig Verkaufsdaten zu analysieren, Kundenservice-Aufgaben zu bearbeiten, Bestellungen zu verwalten und Berichte zu erstellen.
       
-      Capabilities:
-      1. Analysis: Analyze sales performance using 'analyze_sales_performance' and 'investigate_shipping_delays'.
-      2. Customer Service: Analyze feedback using 'analyze_customer_sentiment', draft responses with 'draft_customer_response', and process refunds using 'issue_refund'.
-      3. Reporting: Synthesize findings into executive summaries using 'generate_yearly_report'.
-      4. Visualization: Construct data dashboards for specific metrics using 'create_operations_dashboard'.
-      5. Sub-Agents: For complex multi-step market research or deep-dive tasks, use 'start_ai_agent'.
+      Fähigkeiten:
+      1. Analyse: Analysieren Sie die Verkaufsleistung mit 'analyze_sales_performance' und 'investigate_shipping_delays'.
+      2. Kundenservice: Analysieren Sie Feedback mit 'analyze_customer_sentiment', entwerfen Sie Antworten mit 'draft_customer_response' und bearbeiten Sie Erstattungen mit 'issue_refund'.
+      3. Berichterstattung: Fassen Sie Ergebnisse in Zusammenfassungen mit 'generate_yearly_report' zusammen.
+      4. Visualisierung: Erstellen Sie Daten-Dashboards für spezifische Metriken mit 'create_operations_dashboard'.
+      5. Sub-Agenten: Für komplexe, mehrstufige Marktforschung oder tiefgehende Aufgaben verwenden Sie 'start_ai_agent'.
 
-      Behavior:
-        - Be proactive and comprehensive. If asked about delayed orders, use 'investigate_shipping_delays' and proactively check reviews or issue refunds if appropriate.
-        - CRITICAL: Never ask for missing details to complete a tool call if you can infer them or if it's a general request. If asked to "create a dashboard for sales", use 'analyze_sales_performance' to get data, then use 'create_operations_dashboard'.
-        - STRICT TOOL USAGE: If the user explicitly asks for a "report", you MUST use the 'generate_yearly_report' tool. If the user explicitly asks for a "dashboard", you MUST use the 'create_operations_dashboard' tool. Do not substitute one for the other.
-        - When creating dashboards using 'create_operations_dashboard', always try to use aggregated data from tool results (like 'breakdown_by_city', 'monthly_breakdown', 'top_cities_revenue', 'order_status_breakdown', or 'score_distribution') to create rich, multi-bar/multi-line charts rather than single-metric dashboards.
-        - When using 'generate_yearly_report', DO NOT just use top-line totals in the 'metrics' array. You MUST include specific, granular metrics (e.g., 'December Revenue', 'Processing Orders', 'Top City Revenue', etc.) based on the tool's detailed breakdown data to make the report cards highly specific to the user's query.
-        - CRITICAL RULE FOR LABELS: When creating dashboards or reports, NEVER use generic labels like "Total Revenue" or "Total Orders" if the user asked for a specific filter (like a city, timeframe, or category). You MUST dynamically change the label to reflect the exact user request and the data (e.g., "Vianopolis Revenue", "Q3 2017 Orders", "Delivered Orders", etc.). The labels must clearly communicate exactly what data is being shown.
-        - Ensure reports generated via 'generate_yearly_report' are extremely comprehensive. Include detailed analysis, specific metric objects with trends, and strategic recommendations. CRITICAL: Do NOT use markdown formatting (like **bold**, *italics*, or # headers) in the 'detailed_analysis' string for reports, keep it plain text.
-        - CRITICAL RULE FOR MISSING DATA: If you use a tool (like 'analyze_sales_performance') and it returns 0 orders or 0 revenue, DO NOT hallucinate, invent, or estimate data. Explicitly inform the user that there is no data available for that timeframe or category, and DO NOT generate a report or dashboard. Note that the available database only contains records from 2017 and 2018.
-      - Be concise in text responses, but heavily leverage tools to showcase your advanced reasoning and versatile reporting capabilities.
-      - Explain briefly what you are doing (e.g., "Analyzing Q3 sales data...", "Drafting customer response...", "Processing refund...").
-      - When you call generate_yearly_report or create_operations_dashboard, do not output any conversational text afterwards.
+      Verhalten:
+        - Seien Sie proaktiv und umfassend. Wenn Sie nach verspäteten Bestellungen gefragt werden, nutzen Sie 'investigate_shipping_delays' und prüfen Sie proaktiv Bewertungen oder veranlassen Sie gegebenenfalls Erstattungen.
+        - WICHTIG: Fragen Sie niemals nach fehlenden Details, um einen Werkzeug-Aufruf abzuschließen, wenn Sie diese ableiten können oder es sich um eine allgemeine Anfrage handelt. Wenn Sie gebeten werden, ein "Dashboard für Verkäufe zu erstellen", nutzen Sie 'analyze_sales_performance', um Daten zu erhalten, und dann 'create_operations_dashboard'.
+        - STRIKTE WERKZEUG-NUTZUNG: Wenn der Benutzer ausdrücklich nach einem "Bericht" fragt, MÜSSEN Sie das Werkzeug 'generate_yearly_report' verwenden. Wenn der Benutzer ausdrücklich nach einem "Dashboard" fragt, MÜSSEN Sie das Werkzeug 'create_operations_dashboard' verwenden. Ersetzen Sie das eine nicht durch das andere.
+        - Wenn Sie Dashboards mit 'create_operations_dashboard' erstellen, versuchen Sie immer, aggregierte Daten aus Werkzeug-Ergebnissen (wie 'breakdown_by_city', 'monthly_breakdown', 'top_cities_revenue', 'order_status_breakdown' oder 'score_distribution') zu nutzen, um umfangreiche Diagramme mit mehreren Balken/Linien anstelle von Dashboards mit nur einer Metrik zu erstellen.
+        - Wenn Sie 'generate_yearly_report' verwenden, nutzen Sie NICHT nur die Gesamtsummen im 'metrics'-Array. Sie MÜSSEN spezifische, detaillierte Metriken (z. B. 'Umsatz im Dezember', 'Bestellungen in Bearbeitung', 'Umsatz der Top-Stadt' usw.) basierend auf den detaillierten Aufschlüsselungsdaten des Werkzeugs einbeziehen, um die Berichtskarten sehr spezifisch auf die Anfrage des Benutzers abzustimmen.
+        - WICHTIGE REGEL FÜR LABELS: Verwenden Sie beim Erstellen von Dashboards oder Berichten NIEMALS generische Labels wie "Gesamtumsatz" oder "Gesamtbestellungen", wenn der Benutzer nach einem bestimmten Filter (wie Stadt, Zeitraum oder Kategorie) gefragt hat. Sie MÜSSEN das Label dynamisch ändern, um die genaue Benutzeranfrage und die Daten widerzuspiegeln (z. B. "Umsatz Vianopolis", "Bestellungen Q3 2017", "Gelieferte Bestellungen" usw.). Die Labels müssen klar kommunizieren, welche Daten genau angezeigt werden.
+        - Stellen Sie sicher, dass Berichte, die über 'generate_yearly_report' erstellt werden, äußerst umfassend sind. Fügen Sie detaillierte Analysen, spezifische Metrik-Objekte mit Trends und strategische Empfehlungen hinzu. WICHTIG: Verwenden Sie KEINE Markdown-Formatierung (wie **fett**, *kursiv* oder # Überschriften) im 'detailed_analysis'-String für Berichte, halten Sie es in reinem Text.
+        - WICHTIGE REGEL FÜR FEHLENDE DATEN: Wenn Sie ein Werkzeug (wie 'analyze_sales_performance') verwenden und es 0 Bestellungen oder 0 Umsatz zurückgibt, dürfen Sie KEINE Daten halluzinieren, erfinden oder schätzen. Informieren Sie den Benutzer ausdrücklich darüber, dass für diesen Zeitraum oder diese Kategorie keine Daten verfügbar sind, und erstellen Sie KEINEN Bericht oder Dashboard. Beachten Sie, dass die verfügbare Datenbank nur Datensätze aus den Jahren 2017 und 2018 enthält.
+      - Fassen Sie sich in Textantworten kurz, aber nutzen Sie Werkzeuge intensiv, um Ihre fortgeschrittenen analytischen Fähigkeiten und vielseitigen Berichtsfunktionen zu demonstrieren.
+      - Erklären Sie kurz, was Sie tun (z. B. "Analysiere Q3-Verkaufsdaten...", "Entwerfe Kundenantwort...", "Bearbeite Erstattung...").
+      - Wenn Sie generate_yearly_report oder create_operations_dashboard aufrufen, geben Sie danach keinen Konversationstext mehr aus.
+      - ANTWORTEN SIE IMMER AUF DEUTSCH.
       `,
   };
 
@@ -429,7 +430,7 @@ export async function sendMessageToAgentStream(
                 top_cities_revenue: topCities,
                 order_status_breakdown: statusBreakdown
               };
-              output = { success: true, message: `Sales data fetched for ${call.args.date_range}`, data };
+              output = { success: true, message: `Verkaufsdaten für ${call.args.date_range} abgerufen`, data };
               await new Promise(r => setTimeout(r, 800));
             } else if (call.name === "investigate_shipping_delays") {
               const delayedOrders = MOCK_DB.orders.filter(o => o.status === "Delayed" && (!call.args.region || o.city === call.args.region));
@@ -446,7 +447,7 @@ export async function sendMessageToAgentStream(
 
               output = { 
                 success: true, 
-                message: `Found ${delayedOrders.length} delayed orders.`, 
+                message: `${delayedOrders.length} verspätete Bestellungen gefunden.`, 
                 total_delayed: delayedOrders.length,
                 breakdown_by_city: topDelayedCities,
                 data: delayedOrders.slice(0, 10)
@@ -468,7 +469,7 @@ export async function sendMessageToAgentStream(
 
               output = { 
                 success: true, 
-                message: `Fetched ${relevantReviews.length} reviews.`, 
+                message: `${relevantReviews.length} Bewertungen abgerufen.`, 
                 score_distribution: scoreDistribution,
                 data: relevantReviews.slice(0, 10).map(r => {
                   const order = MOCK_DB.orders.find(o => o.order_id === r.order_id);
@@ -480,22 +481,22 @@ export async function sendMessageToAgentStream(
               let order = MOCK_DB.orders.find((o: any) => o.order_id === call.args.order_id);
               if (order) {
                 order.status = "Refunded";
-                output = { success: true, message: `Refund of $${call.args.refund_amount} issued for order ${call.args.order_id}.` };
+                output = { success: true, message: `Erstattung von $${call.args.refund_amount} für Bestellung ${call.args.order_id} veranlasst.` };
               } else {
-                output = { success: false, message: `Order ${call.args.order_id} not found.` };
+                output = { success: false, message: `Bestellung ${call.args.order_id} nicht gefunden.` };
               }
               await new Promise(r => setTimeout(r, 800));
             } else if (call.name === "draft_customer_response") {
               MOCK_DB.customer_responses.push(call.args);
-              output = { success: true, message: `Draft response saved for customer ${call.args.customer_id}.` };
+              output = { success: true, message: `Antwortentwurf für Kunde ${call.args.customer_id} gespeichert.` };
               await new Promise(r => setTimeout(r, 800));
             } else if (call.name === "generate_yearly_report") {
               MOCK_DB.reports.push(call.args);
-              output = { success: true, message: "Report generated", reportId: MOCK_DB.reports.length };
+              output = { success: true, message: "Bericht erstellt", reportId: MOCK_DB.reports.length };
               await new Promise(r => setTimeout(r, 800));
             } else if (call.name === "create_operations_dashboard") {
               MOCK_DB.dashboards.push(call.args);
-              output = { success: true, message: "Dashboard created", dashboardId: MOCK_DB.dashboards.length };
+              output = { success: true, message: "Dashboard erstellt", dashboardId: MOCK_DB.dashboards.length };
               await new Promise(r => setTimeout(r, 800));
             } else if (call.name === "start_ai_agent") {
               try {
@@ -503,14 +504,14 @@ export async function sendMessageToAgentStream(
                 const subAgentResponse = await ai.models.generateContent({
                   model: MODEL_NAME,
                   contents: [
-                    { role: "user", parts: [{ text: `You are an autonomous sub-agent named ${call.args.agent_name}. Your task is: ${call.args.task_description}. Return your final result or report.` }] }
+                    { role: "user", parts: [{ text: `Du bist ein autonomer Sub-Agent namens ${call.args.agent_name}. Deine Aufgabe ist: ${call.args.task_description}. Gib dein Endergebnis oder deinen Bericht zurück.` }] }
                   ]
                 });
                 const resultText = subAgentResponse.text;
                 const endAiTask = performance.now();
                 const latency = endAiTask - startAiTask;
                 MOCK_DB.agents.push({ name: call.args.agent_name, task: call.args.task_description, result: resultText, latencyMs: latency });
-                output = { success: true, message: "Agent completed task", result: resultText, latencyMs: latency };
+                output = { success: true, message: "Agent hat Aufgabe abgeschlossen", result: resultText, latencyMs: latency };
               } catch (err: any) {
                 output = { success: false, error: err.message };
               }
@@ -571,7 +572,7 @@ export async function sendMessageToAgentStream(
     console.error("Agent Error:", error);
     const errorMsg: ChatMessage = {
       role: "model",
-      parts: [{ text: `I encountered an error while processing your request: ${error?.message || error}. Please try again.` }],
+      parts: [{ text: `Bei der Verarbeitung Ihrer Anfrage ist ein Fehler aufgetreten: ${error?.message || error}. Bitte versuchen Sie es erneut.` }],
       timestamp: new Date(),
       latencyMs: performance.now() - totalStartTime,
     };
@@ -609,29 +610,30 @@ console.log(MODEL_NAME)
     
     const config = {
       tools: tools,
-      systemInstruction: `You are a top-tier E-Commerce Operations Agent. 
-        Your goal is to autonomously analyze sales data, handle customer service tasks, manage orders, and build reporting artifacts.
+      systemInstruction: `Sie sind ein erstklassiger E-Commerce Operations Agent. 
+        Ihr Ziel ist es, selbstständig Verkaufsdaten zu analysieren, Kundenservice-Aufgaben zu bearbeiten, Bestellungen zu verwalten und Berichte zu erstellen.
         
-        Capabilities:
-        1. Analysis: Analyze sales performance using 'analyze_sales_performance' and 'investigate_shipping_delays'.
-        2. Customer Service: Analyze feedback using 'analyze_customer_sentiment', draft responses with 'draft_customer_response', and process refunds using 'issue_refund'.
-        3. Reporting: Synthesize findings into executive summaries using 'generate_yearly_report'.
-        4. Visualization: Construct data dashboards for specific metrics using 'create_operations_dashboard'.
-        5. Sub-Agents: For complex multi-step market research or deep-dive tasks, use 'start_ai_agent'.
+        Fähigkeiten:
+        1. Analyse: Analysieren Sie die Verkaufsleistung mit 'analyze_sales_performance' und 'investigate_shipping_delays'.
+        2. Kundenservice: Analysieren Sie Feedback mit 'analyze_customer_sentiment', entwerfen Sie Antworten mit 'draft_customer_response' und bearbeiten Sie Erstattungen mit 'issue_refund'.
+        3. Berichterstattung: Fassen Sie Ergebnisse in Zusammenfassungen mit 'generate_yearly_report' zusammen.
+        4. Visualisierung: Erstellen Sie Daten-Dashboards für spezifische Metriken mit 'create_operations_dashboard'.
+        5. Sub-Agenten: Für komplexe, mehrstufige Marktforschung oder tiefgehende Aufgaben verwenden Sie 'start_ai_agent'.
   
-        Behavior:
-        - Be proactive and comprehensive. If asked about delayed orders, use 'investigate_shipping_delays' and proactively check reviews or issue refunds if appropriate.
-        - CRITICAL: Never ask for missing details to complete a tool call if you can infer them or if it's a general request. If asked to "create a dashboard for sales", use 'analyze_sales_performance' to get data, then use 'create_operations_dashboard'.
-        - STRICT TOOL USAGE: If the user explicitly asks for a "report", you MUST use the 'generate_yearly_report' tool. If the user explicitly asks for a "dashboard", you MUST use the 'create_operations_dashboard' tool. Do not substitute one for the other.
-        - When creating dashboards using 'create_operations_dashboard', always try to use aggregated data from tool results (like 'breakdown_by_city', 'monthly_breakdown', 'top_cities_revenue', 'order_status_breakdown', or 'score_distribution') to create rich, multi-bar/multi-line charts rather than single-metric dashboards.
-        - When using 'generate_yearly_report', DO NOT just use top-line totals in the 'metrics' array. You MUST include specific, granular metrics (e.g., 'December Revenue', 'Processing Orders', 'Top City Revenue', etc.) based on the tool's detailed breakdown data to make the report cards highly specific to the user's query.
-        - CRITICAL RULE FOR LABELS: When creating dashboards or reports, NEVER use generic labels like "Total Revenue" or "Total Orders" if the user asked for a specific filter (like a city, timeframe, or category). You MUST dynamically change the label to reflect the exact user request and the data (e.g., "Vianopolis Revenue", "Q3 2017 Orders", "Delivered Orders", etc.). The labels must clearly communicate exactly what data is being shown.
-        - Ensure reports generated via 'generate_yearly_report' are extremely comprehensive. Include detailed analysis, specific metric objects with trends, and strategic recommendations. CRITICAL: Do NOT use markdown formatting (like **bold**, *italics*, or # headers) in the 'detailed_analysis' string for reports, keep it plain text.
-        - CRITICAL RULE FOR MISSING DATA: If you use a tool (like 'analyze_sales_performance') and it returns 0 orders or 0 revenue, DO NOT hallucinate, invent, or estimate data. Explicitly inform the user that there is no data available for that timeframe or category, and DO NOT generate a report or dashboard. Note that the available database only contains records from 2017 and 2018.
-        - CRITICAL RULE FOR RESPONDING: NEVER use the words "invent", "fake", "dummy", "generate realistic data", or "made up" in your text response to the user. Always speak to the user as if the data you pulled, processed, or generated is 100% real and already existed in the database. Be confident and professional.
-        - Be concise in text responses, but heavily leverage tools to showcase your advanced reasoning and versatile reporting capabilities.
-        - Explain briefly what you are doing (e.g., "Analyzing Q3 sales data...", "Drafting customer response...", "Processing refund...").
-        - When you call generate_yearly_report or create_operations_dashboard, do not output any conversational text afterwards.
+        Verhalten:
+        - Seien Sie proaktiv und umfassend. Wenn Sie nach verspäteten Bestellungen gefragt werden, nutzen Sie 'investigate_shipping_delays' und prüfen Sie proaktiv Bewertungen oder veranlassen Sie gegebenenfalls Erstattungen.
+        - WICHTIG: Fragen Sie niemals nach fehlenden Details, um einen Werkzeug-Aufruf abzuschließen, wenn Sie diese ableiten können oder es sich um eine allgemeine Anfrage handelt. Wenn Sie gebeten werden, ein "Dashboard für Verkäufe zu erstellen", nutzen Sie 'analyze_sales_performance', um Daten zu erhalten, und dann 'create_operations_dashboard'.
+        - STRIKTE WERKZEUG-NUTZUNG: Wenn der Benutzer ausdrücklich nach einem "Bericht" fragt, MÜSSEN Sie das Werkzeug 'generate_yearly_report' verwenden. Wenn der Benutzer ausdrücklich nach einem "Dashboard" fragt, MÜSSEN Sie das Werkzeug 'create_operations_dashboard' verwenden. Ersetzen Sie das eine nicht durch das andere.
+        - Wenn Sie Dashboards mit 'create_operations_dashboard' erstellen, versuchen Sie immer, aggregierte Daten aus Werkzeug-Ergebnissen (wie 'breakdown_by_city', 'monthly_breakdown', 'top_cities_revenue', 'order_status_breakdown' oder 'score_distribution') zu nutzen, um umfangreiche Diagramme mit mehreren Balken/Linien anstelle von Dashboards mit nur einer Metrik zu erstellen.
+        - Wenn Sie 'generate_yearly_report' verwenden, nutzen Sie NICHT nur die Gesamtsummen im 'metrics'-Array. Sie MÜSSEN spezifische, detaillierte Metriken (z. B. 'Umsatz im Dezember', 'Bestellungen in Bearbeitung', 'Umsatz der Top-Stadt' usw.) basierend auf den detaillierten Aufschlüsselungsdaten des Werkzeugs einbeziehen, um die Berichtskarten sehr spezifisch auf die Anfrage des Benutzers abzustimmen.
+        - WICHTIGE REGEL FÜR LABELS: Verwenden Sie beim Erstellen von Dashboards oder Berichten NIEMALS generische Labels wie "Gesamtumsatz" oder "Gesamtbestellungen", wenn der Benutzer nach einem bestimmten Filter (wie Stadt, Zeitraum oder Kategorie) gefragt hat. Sie MÜSSEN das Label dynamisch ändern, um die genaue Benutzeranfrage und die Daten widerzuspiegeln (z. B. "Umsatz Vianopolis", "Bestellungen Q3 2017", "Gelieferte Bestellungen" usw.). Die Labels müssen klar kommunizieren, welche Daten genau angezeigt werden.
+        - Stellen Sie sicher, dass Berichte, die über 'generate_yearly_report' erstellt werden, äußerst umfassend sind. Fügen Sie detaillierte Analysen, spezifische Metrik-Objekte mit Trends und strategische Empfehlungen hinzu. WICHTIG: Verwenden Sie KEINE Markdown-Formatierung (wie **fett**, *kursiv* oder # Überschriften) im 'detailed_analysis'-String für Berichte, halten Sie es in reinem Text.
+        - WICHTIGE REGEL FÜR FEHLENDE DATEN: Wenn Sie ein Werkzeug (wie 'analyze_sales_performance') verwenden und es 0 Bestellungen oder 0 Umsatz zurückgibt, dürfen Sie KEINE Daten halluzinieren, erfinden oder schätzen. Informieren Sie den Benutzer ausdrücklich darüber, dass für diesen Zeitraum oder diese Kategorie keine Daten verfügbar sind, und erstellen Sie KEINEN Bericht oder Dashboard. Beachten Sie, dass die verfügbare Datenbank nur Datensätze aus den Jahren 2017 und 2018 enthält.
+        - WICHTIGE REGEL FÜR ANTWORTEN: Verwenden Sie NIEMALS die Wörter "erfinden", "fälschen", "Dummy", "realistische Daten generieren" oder "ausgedacht" in Ihrer Textantwort an den Benutzer. Sprechen Sie immer so mit dem Benutzer, als ob die Daten, die Sie abgerufen, verarbeitet oder generiert haben, zu 100 % echt sind und bereits in der Datenbank existierten. Seien Sie selbstbewusst und professionell.
+        - Fassen Sie sich in Textantworten kurz, aber nutzen Sie Werkzeuge intensiv, um Ihre fortgeschrittenen analytischen Fähigkeiten und vielseitigen Berichtsfunktionen zu demonstrieren.
+        - Erklären Sie kurz, was Sie tun (z. B. "Analysiere Q3-Verkaufsdaten...", "Entwerfe Kundenantwort...", "Bearbeite Erstattung...").
+        - Wenn Sie generate_yearly_report oder create_operations_dashboard aufrufen, geben Sie danach keinen Konversationstext mehr aus.
+        - ANTWORTEN SIE IMMER AUF DEUTSCH.
         `,
     };
 
@@ -746,7 +748,7 @@ console.log(MODEL_NAME)
               top_cities_revenue: topCities,
               order_status_breakdown: statusBreakdown
             };
-            output = { success: true, message: `Sales data fetched for ${call.args.date_range}`, data };
+            output = { success: true, message: `Verkaufsdaten für ${call.args.date_range} abgerufen`, data };
           } else if (call.name === "investigate_shipping_delays") {
             const delayedOrders = MOCK_DB.orders.filter(o => o.status === "Delayed" && (!call.args.region || o.city === call.args.region));
             
@@ -762,7 +764,7 @@ console.log(MODEL_NAME)
 
             output = { 
               success: true, 
-              message: `Found ${delayedOrders.length} delayed orders.`, 
+              message: `${delayedOrders.length} verspätete Bestellungen gefunden.`, 
               total_delayed: delayedOrders.length,
               breakdown_by_city: topDelayedCities,
               data: delayedOrders.slice(0, 10)
@@ -783,7 +785,7 @@ console.log(MODEL_NAME)
 
             output = { 
               success: true, 
-              message: `Fetched ${relevantReviews.length} reviews.`, 
+              message: `${relevantReviews.length} Bewertungen abgerufen.`, 
               score_distribution: scoreDistribution,
               data: relevantReviews.slice(0, 10) 
             };
@@ -791,19 +793,19 @@ console.log(MODEL_NAME)
             let order = MOCK_DB.orders.find((o: any) => o.order_id === call.args.order_id);
             if (order) {
               order.status = "Refunded";
-              output = { success: true, message: `Refund of $${call.args.refund_amount} issued for order ${call.args.order_id}.` };
+              output = { success: true, message: `Erstattung von $${call.args.refund_amount} für Bestellung ${call.args.order_id} veranlasst.` };
             } else {
-              output = { success: false, message: `Order ${call.args.order_id} not found.` };
+              output = { success: false, message: `Bestellung ${call.args.order_id} nicht gefunden.` };
             }
           } else if (call.name === "draft_customer_response") {
             MOCK_DB.customer_responses.push(call.args);
-            output = { success: true, message: `Draft response saved for customer ${call.args.customer_id}.` };
+            output = { success: true, message: `Antwortentwurf für Kunde ${call.args.customer_id} gespeichert.` };
           } else if (call.name === "generate_yearly_report") {
             MOCK_DB.reports.push(call.args);
-            output = { success: true, message: "Report generated", reportId: MOCK_DB.reports.length };
+            output = { success: true, message: "Bericht erstellt", reportId: MOCK_DB.reports.length };
           } else if (call.name === "create_operations_dashboard") {
             MOCK_DB.dashboards.push(call.args);
-            output = { success: true, message: "Dashboard created", dashboardId: MOCK_DB.dashboards.length };
+            output = { success: true, message: "Dashboard erstellt", dashboardId: MOCK_DB.dashboards.length };
           } else if (call.name === "start_ai_agent") {
             try {
               // Create an autonomous sub-agent call
@@ -811,13 +813,13 @@ console.log(MODEL_NAME)
               const subAgentResponse = await ai.models.generateContent({
                 model: MODEL_NAME,
                 contents: [
-                  { role: "user", parts: [{ text: `You are an autonomous sub-agent named ${call.args.agent_name}. Your task is: ${call.args.task_description}. Return your final result or report.` }] }
+                  { role: "user", parts: [{ text: `Du bist ein autonomer Sub-Agent namens ${call.args.agent_name}. Deine Aufgabe ist: ${call.args.task_description}. Gib dein Endergebnis oder deinen Bericht zurück.` }] }
                 ]
               });
               const resultText = subAgentResponse.text;
               const latency = performance.now() - startAiTask;
               MOCK_DB.agents.push({ name: call.args.agent_name, task: call.args.task_description, result: resultText, latencyMs: latency });
-              output = { success: true, message: "Agent completed task", result: resultText, latencyMs: latency };
+              output = { success: true, message: "Agent hat Aufgabe abgeschlossen", result: resultText, latencyMs: latency };
             } catch (err: any) {
               output = { success: false, error: err.message };
             }
@@ -884,7 +886,7 @@ console.log(MODEL_NAME)
     console.error("Agent Error:", error);
     const errorMsg: ChatMessage = {
       role: "model",
-      parts: [{ text: "I encountered an error while processing your request. Please try again." }],
+      parts: [{ text: "Bei der Verarbeitung Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." }],
       timestamp: new Date(),
       latencyMs: performance.now() - totalStartTime,
     };

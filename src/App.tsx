@@ -19,25 +19,25 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { cn } from '@/lib/utils';
-import { sendMessageToAgentStream, ChatMessage, ToolCall, MOCK_DB, AgentStep } from '@/services/gemini';
+import { cn } from './lib/utils';
+import { sendMessageToAgentStream, ChatMessage, ToolCall, MOCK_DB, AgentStep } from './services/gemini';
 
 // --- Components ---
 
 const Sidebar = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (t: string) => void }) => {
   const menuItems = [
-    { id: 'chat', label: 'Agent Chat', icon: Bot },
+    { id: 'chat', label: 'Agenten-Chat', icon: Bot },
     { id: 'dashboards', label: 'Dashboards', icon: Activity },
-    { id: 'reports', label: 'Reports', icon: Search },
-    { id: 'orders', label: 'Orders', icon: Database },
-    { id: 'reviews', label: 'Reviews', icon: Briefcase },
+    { id: 'reports', label: 'Berichte', icon: Search },
+    { id: 'orders', label: 'Bestellungen', icon: Database },
+    { id: 'reviews', label: 'Bewertungen', icon: Briefcase },
   ];
 
   return (
     <div className="hidden md:flex w-[280px] flex-col h-screen pt-8 pb-6 pl-8 pr-4">
       <div className="mb-10 px-6 flex items-center">
         <button onClick={() => window.location.reload()} className="text-2xl font-bold text-black tracking-tight text-left hover:opacity-70 transition-opacity">
-          Retail Agent Dashboard
+          Retail Agenten-Dashboard
         </button>
       </div>
       
@@ -79,7 +79,7 @@ const AgentStepBlock = ({ step }: { step: AgentStep }) => {
           {step.type === 'tool' ? <Database size={12} /> : <Bot size={12} />}
         </div>
         <span className="font-semibold text-[13px] text-zinc-800 truncate">
-          {step.type === 'tool' ? `Tool Call: ${step.toolName}` : 'Thinking'}
+          {step.type === 'tool' ? `Werkzeug-Aufruf: ${step.toolName}` : 'Denke nach'}
         </span>
         {step.status === 'streaming' && <Loader2 size={12} className="animate-spin text-zinc-400 ml-auto shrink-0" />}
         {step.status === 'completed' && (
@@ -108,8 +108,8 @@ const AgentStepBlock = ({ step }: { step: AgentStep }) => {
 
       {step.result && (
         <div className="mt-4 pt-3 border-t border-black/[0.04] flex flex-col gap-1 text-[11px]">
-          <span className="font-semibold text-zinc-400 uppercase tracking-wider text-[9px]">Result</span> 
-          <span className="text-zinc-700 truncate font-medium">{step.result.message || 'Success'}</span>
+          <span className="font-semibold text-zinc-400 uppercase tracking-wider text-[9px]">Ergebnis</span> 
+          <span className="text-zinc-700 truncate font-medium">{step.result.message || 'Erfolg'}</span>
         </div>
       )}
     </motion.div>
@@ -173,12 +173,12 @@ const ChatInterface = ({
                 <Activity className="text-zinc-600" size={14} />
               </div>
             )}
-            Execution Trace
+            Ausführungsverlauf
           </h2>
         </header>
         <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-4 md:pb-8 pt-4 md:pt-6 space-y-4" ref={leftScrollRef}>
           {agentSteps.length === 0 && !isProcessing && (
-             <div className="text-zinc-400 text-sm font-medium mt-10 text-center">Start a task to see agent steps here.</div>
+             <div className="text-zinc-400 text-sm font-medium mt-10 text-center">Starten Sie eine Aufgabe, um hier die Schritte des Agenten zu sehen.</div>
           )}
           {agentSteps.map((step) => (
             <AgentStepBlock key={step.id} step={step} />
@@ -194,7 +194,7 @@ const ChatInterface = ({
             <div className="w-8 h-8 rounded-full bg-zinc-50 flex items-center justify-center border border-black/5">
               <Bot className="text-zinc-600" size={14} />
             </div>
-            <h2 className="font-semibold text-zinc-900 text-[15px]">Virtual Assistant</h2>
+            <h2 className="font-semibold text-zinc-900 text-[15px]">Virtueller Assistent</h2>
           </div>
         </header>
 
@@ -205,16 +205,16 @@ const ChatInterface = ({
               <div className="w-16 h-16 bg-white shadow-sm border border-black/5 rounded-full flex items-center justify-center">
                 <Bot size={32} className="text-zinc-300" />
               </div>
-              <p className="font-medium text-zinc-500">How can I help you today?</p>
+              <p className="font-medium text-zinc-500">Wie kann ich Ihnen heute helfen?</p>
               <div className="flex flex-wrap justify-center gap-3 w-full max-w-md">
-                <button onClick={() => onSendMessage("Write a report about sales in São Paulo in 2017.")} className="px-5 py-2.5 bg-zinc-50 hover:bg-zinc-100 rounded-full transition-all border border-black/5 text-zinc-600 font-medium text-[13px]">
-                Write a report about sales in São Paulo in 2017
+                <button onClick={() => onSendMessage("Schreibe einen Bericht über die Verkäufe in São Paulo im Jahr 2017.")} className="px-5 py-2.5 bg-zinc-50 hover:bg-zinc-100 rounded-full transition-all border border-black/5 text-zinc-600 font-medium text-[13px]">
+                Schreibe einen Bericht über die Verkäufe in São Paulo im Jahr 2017
                 </button>
-                <button onClick={() => onSendMessage("Create a dashboard about our key markets")} className="px-5 py-2.5 bg-zinc-50 hover:bg-zinc-100 rounded-full transition-all border border-black/5 text-zinc-600 font-medium text-[13px]">
-                Create a dashboard about our key markets
+                <button onClick={() => onSendMessage("Erstelle ein Dashboard über unsere wichtigsten Märkte")} className="px-5 py-2.5 bg-zinc-50 hover:bg-zinc-100 rounded-full transition-all border border-black/5 text-zinc-600 font-medium text-[13px]">
+                Erstelle ein Dashboard über unsere wichtigsten Märkte
                 </button>
-                <button onClick={() => onSendMessage("Find the latest 1-star review and refund the order")} className="px-5 py-2.5 bg-zinc-50 hover:bg-zinc-100 rounded-full transition-all border border-black/5 text-zinc-600 font-medium text-[13px]">
-                Find latest 1-star review & refund 
+                <button onClick={() => onSendMessage("Finde die neueste 1-Sterne-Bewertung und erstatte die Bestellung")} className="px-5 py-2.5 bg-zinc-50 hover:bg-zinc-100 rounded-full transition-all border border-black/5 text-zinc-600 font-medium text-[13px]">
+                Finde die neueste 1-Sterne-Bewertung und erstatte die Bestellung
                 </button>
               </div>
             </div>
@@ -249,11 +249,11 @@ const ChatInterface = ({
                   <div className="flex flex-col gap-3 min-w-[200px]">
                     <div className="p-4 bg-white border border-black/5 rounded-3xl rounded-bl-[8px] shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-3">
                       <span className="font-medium text-[14px] text-zinc-800">
-                        {msg.hasReport && msg.hasDashboard ? 'Report & Dashboard ready' : msg.hasReport ? 'Report now ready' : 'Dashboard now ready'}
+                        {msg.hasReport && msg.hasDashboard ? 'Bericht & Dashboard bereit' : msg.hasReport ? 'Bericht jetzt bereit' : 'Dashboard jetzt bereit'}
                       </span>
                       {msg.latencyMs && (
                         <div className="text-emerald-600 flex items-center gap-1.5 text-[11px] font-medium">
-                          <Activity size={12} className="text-emerald-500" /> Latency {(msg.latencyMs / 1000).toFixed(2)}s
+                          <Activity size={12} className="text-emerald-500" /> Latenz {(msg.latencyMs / 1000).toFixed(2)}s
                         </div>
                       )}
                     </div>
@@ -264,7 +264,7 @@ const ChatInterface = ({
                           onClick={() => setActiveTab('reports')}
                           className="bg-black text-white px-6 py-3 rounded-full font-medium w-max hover:bg-zinc-800 transition-colors text-[13px] shadow-sm flex items-center gap-2"
                         >
-                          go to reports &rarr;
+                          zu den Berichten &rarr;
                         </button>
                       )}
                       {msg.hasDashboard && (
@@ -272,7 +272,7 @@ const ChatInterface = ({
                           onClick={() => setActiveTab('dashboards')}
                           className="bg-black text-white px-6 py-3 rounded-full font-medium w-max hover:bg-zinc-800 transition-colors text-[13px] shadow-sm flex items-center gap-2"
                         >
-                          go to dashboards &rarr;
+                          zu den Dashboards &rarr;
                         </button>
                       )}
                     </div>
@@ -298,7 +298,7 @@ const ChatInterface = ({
                 {msg.groundingMetadata?.groundingChunks && (
                   <div className="mt-4 pt-4 border-t border-black/[0.04]">
                     <p className="text-[10px] font-semibold text-zinc-400 mb-2.5 flex items-center gap-1.5 uppercase tracking-wider">
-                      <Search size={12} /> Sources
+                      <Search size={12} /> Quellen
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {msg.groundingMetadata.groundingChunks.map((chunk: any, i: number) => (
@@ -361,10 +361,10 @@ const ChatInterface = ({
               <div className="flex flex-col gap-3 min-w-[200px]">
                 <div className="p-4 bg-white border border-black/5 rounded-3xl rounded-bl-[8px] shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-3">
                   <span className="font-medium text-[14px] text-zinc-800">
-                    {isGeneratingReport && isGeneratingDashboard ? 'Finalizing Report & Dashboard...' : isGeneratingReport ? 'Report now ready' : 'Dashboard now ready'}
+                    {isGeneratingReport && isGeneratingDashboard ? 'Bericht & Dashboard werden fertiggestellt...' : isGeneratingReport ? 'Bericht wird fertiggestellt...' : 'Dashboard wird fertiggestellt...'}
                   </span>
                   <div className="text-zinc-400 flex items-center gap-1.5 text-[11px] font-medium">
-                    <Loader2 size={12} className="animate-spin" /> Finalizing...
+                    <Loader2 size={12} className="animate-spin" /> Wird fertiggestellt...
                   </div>
                 </div>
                 
@@ -374,7 +374,7 @@ const ChatInterface = ({
                       disabled
                       className="bg-black/50 text-white px-6 py-3 rounded-full font-medium w-max text-[13px] shadow-sm flex items-center gap-2 cursor-not-allowed"
                     >
-                      go to reports &rarr;
+                      zu den Berichten &rarr;
                     </button>
                   )}
                   {isGeneratingDashboard && (
@@ -382,7 +382,7 @@ const ChatInterface = ({
                       disabled
                       className="bg-black/50 text-white px-6 py-3 rounded-full font-medium w-max text-[13px] shadow-sm flex items-center gap-2 cursor-not-allowed"
                     >
-                      go to dashboards &rarr;
+                      zu den Dashboards &rarr;
                     </button>
                   )}
                 </div>
@@ -397,7 +397,7 @@ const ChatInterface = ({
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Write a message..."
+              placeholder="Schreiben Sie eine Nachricht..."
               disabled={isProcessing}
               className="flex-1 bg-transparent px-5 py-2 outline-none placeholder:text-zinc-400 text-zinc-900 text-[14px] font-medium"
             />
@@ -412,14 +412,14 @@ const ChatInterface = ({
 
           {history.length > 0 && (
             <div className="flex flex-wrap justify-center gap-2 mt-4 w-full">
-              <button onClick={() => onSendMessage("Write a report about sales in São Paulo in 2017.")} className="px-4 py-2 bg-zinc-50 hover:bg-zinc-100 rounded-full transition-all border border-black/5 text-zinc-600 font-medium text-[12px]">
-              Write a report about sales in São Paulo in 2017
+              <button onClick={() => onSendMessage("Schreibe einen Bericht über die Verkäufe in São Paulo im Jahr 2017.")} className="px-4 py-2 bg-zinc-50 hover:bg-zinc-100 rounded-full transition-all border border-black/5 text-zinc-600 font-medium text-[12px]">
+              Schreibe einen Bericht über die Verkäufe in São Paulo im Jahr 2017
               </button>
-              <button onClick={() => onSendMessage("Create a dashboard about our key markets")} className="px-4 py-2 bg-zinc-50 hover:bg-zinc-100 rounded-full transition-all border border-black/5 text-zinc-600 font-medium text-[12px]">
-                Create a dashboard about our key markets
+              <button onClick={() => onSendMessage("Erstelle ein Dashboard über unsere wichtigsten Märkte")} className="px-4 py-2 bg-zinc-50 hover:bg-zinc-100 rounded-full transition-all border border-black/5 text-zinc-600 font-medium text-[12px]">
+                Erstelle ein Dashboard über unsere wichtigsten Märkte
               </button>
-              <button onClick={() => onSendMessage("Find the latest 1-star review and refund the order.")} className="px-4 py-2 bg-zinc-50 hover:bg-zinc-100 rounded-full transition-all border border-black/5 text-zinc-600 font-medium text-[12px]">
-              Find latest 1-star review & refund 
+              <button onClick={() => onSendMessage("Finde die neueste 1-Sterne-Bewertung und erstatte die Bestellung.")} className="px-4 py-2 bg-zinc-50 hover:bg-zinc-100 rounded-full transition-all border border-black/5 text-zinc-600 font-medium text-[12px]">
+              Finde die neueste 1-Sterne-Bewertung und erstatte die Bestellung
               </button>
             </div>
           )}
@@ -435,15 +435,15 @@ const OrdersView = ({ onAction }: { onAction: (msg?: string) => void }) => {
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex justify-between items-end mb-8 pl-2">
         <div>
-          <h2 className="text-3xl font-bold text-zinc-900 tracking-tight">Order Database</h2>
-          <p className="text-zinc-500 mt-1 text-[15px] font-medium">Manage and monitor all recent orders.</p>
+          <h2 className="text-3xl font-bold text-zinc-900 tracking-tight">Bestelldatenbank</h2>
+          <p className="text-zinc-500 mt-1 text-[15px] font-medium">Verwalten und überwachen Sie alle aktuellen Bestellungen.</p>
         </div>
       </div>
       
       <div className="grid gap-4">
         {MOCK_DB.orders.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-black/[0.04]">
-            <p className="text-zinc-400 font-medium">No orders found.</p>
+            <p className="text-zinc-400 font-medium">Keine Bestellungen gefunden.</p>
           </div>
         ) : (
           MOCK_DB.orders.map((order, i) => (
@@ -455,20 +455,20 @@ const OrdersView = ({ onAction }: { onAction: (msg?: string) => void }) => {
                 </div>
                 <div className="mt-4 flex gap-8 text-sm text-zinc-600">
                   <div className="flex flex-col">
-                    <span className="text-[11px] text-zinc-400 font-medium uppercase tracking-wider mb-1">Customer</span>
+                    <span className="text-[11px] text-zinc-400 font-medium uppercase tracking-wider mb-1">Kunde</span>
                     <strong className="text-zinc-900 text-[15px] font-semibold">{order.customer_id}</strong>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[11px] text-zinc-400 font-medium uppercase tracking-wider mb-1">Amount</span>
+                    <span className="text-[11px] text-zinc-400 font-medium uppercase tracking-wider mb-1">Betrag</span>
                     <strong className="text-emerald-600 text-[15px] font-semibold">${order.amount.toLocaleString()}</strong>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[11px] text-zinc-400 font-medium uppercase tracking-wider mb-1">Date</span>
+                    <span className="text-[11px] text-zinc-400 font-medium uppercase tracking-wider mb-1">Datum</span>
                     <strong className="text-zinc-600 text-[15px] font-semibold">{new Date(order.date).toLocaleDateString()}</strong>
                   </div>
                   {order.delivered_date && (
                     <div className="flex flex-col">
-                      <span className="text-[11px] text-zinc-400 font-medium uppercase tracking-wider mb-1">Delivered On</span>
+                      <span className="text-[11px] text-zinc-400 font-medium uppercase tracking-wider mb-1">Geliefert am</span>
                       <strong className="text-zinc-900 text-[15px] font-semibold">{new Date(order.delivered_date).toLocaleDateString()}</strong>
                     </div>
                   )}
@@ -498,15 +498,15 @@ const ReviewsView = ({ onAction }: { onAction: (msg?: string) => void }) => {
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex justify-between items-end mb-8 pl-2">
         <div>
-          <h2 className="text-3xl font-bold text-zinc-900 tracking-tight">Customer Reviews</h2>
-          <p className="text-zinc-500 mt-1 text-[15px] font-medium">Monitor and manage customer feedback.</p>
+          <h2 className="text-3xl font-bold text-zinc-900 tracking-tight">Kundenbewertungen</h2>
+          <p className="text-zinc-500 mt-1 text-[15px] font-medium">Kundenfeedback überwachen und verwalten.</p>
         </div>
       </div>
 
       <div className="grid gap-4">
         {MOCK_DB.reviews?.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-black/[0.04]">
-            <p className="text-zinc-400 font-medium">No reviews found.</p>
+            <p className="text-zinc-400 font-medium">Keine Bewertungen gefunden.</p>
           </div>
         ) : (
           MOCK_DB.reviews?.map((review, i) => (
@@ -528,13 +528,13 @@ const ReviewsView = ({ onAction }: { onAction: (msg?: string) => void }) => {
                   </div>
                   <p className="text-zinc-700 text-[15px] leading-relaxed mb-3">"{review.text}"</p>
                   <div className="flex gap-4 text-[12px] font-medium">
-                    <span className="flex items-center gap-1.5 text-zinc-500 bg-zinc-50 px-3 py-1 rounded-full border border-black/5">Order: <strong className="text-zinc-800">{review.order_id}</strong></span>
-                    <span className="flex items-center gap-1.5 text-zinc-500 bg-zinc-50 px-3 py-1 rounded-full border border-black/5">Category: <strong className="text-zinc-800 capitalize">{review.product_category}</strong></span>
+                    <span className="flex items-center gap-1.5 text-zinc-500 bg-zinc-50 px-3 py-1 rounded-full border border-black/5">Bestellung: <strong className="text-zinc-800">{review.order_id}</strong></span>
+                    <span className="flex items-center gap-1.5 text-zinc-500 bg-zinc-50 px-3 py-1 rounded-full border border-black/5">Kategorie: <strong className="text-zinc-800 capitalize">{review.product_category}</strong></span>
                   </div>
                 </div>
               </div>
-              <button onClick={() => onAction(`Draft a customer response for review ${review.review_id} from ${review.customer_id}. Offer a solution.`)} className="px-4 py-2 text-[12px] font-medium rounded-full bg-white border border-black/10 text-zinc-600 hover:text-black hover:border-black/20 transition-colors">
-                Draft Response
+              <button onClick={() => onAction(`Entwerfe eine Kundenantwort für die Bewertung ${review.review_id} von ${review.customer_id}. Biete eine Lösung an.`)} className="px-4 py-2 text-[12px] font-medium rounded-full bg-white border border-black/10 text-zinc-600 hover:text-black hover:border-black/20 transition-colors">
+                Antwort entwerfen
               </button>
             </div>
           ))
@@ -555,18 +555,18 @@ const ReportsView = ({ onAction }: { onAction: (msg?: string) => void }) => {
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex justify-between items-end mb-8 pl-2">
           <div>
-            <h2 className="text-3xl font-bold text-zinc-900 tracking-tight">Reports</h2>
-            <p className="text-zinc-500 mt-1 text-[15px] font-medium">Insights and summaries generated by AI.</p>
+            <h2 className="text-3xl font-bold text-zinc-900 tracking-tight">Berichte</h2>
+            <p className="text-zinc-500 mt-1 text-[15px] font-medium">Von KI generierte Erkenntnisse und Zusammenfassungen.</p>
           </div>
           <button onClick={handleGenerateReport} className="px-5 py-2.5 bg-black text-white rounded-full text-[13px] font-medium hover:bg-zinc-800 transition-colors">
-            + Generate report
+            + Bericht erstellen
           </button>
         </div>
 
         <div className="grid gap-6">
           {MOCK_DB.reports.length === 0 ? (
             <div className="text-center py-20 bg-white rounded-3xl border border-black/[0.04]">
-              <p className="text-zinc-400 font-medium">No reports generated yet. Ask the agent to generate a performance report.</p>
+              <p className="text-zinc-400 font-medium">Noch keine Berichte erstellt. Bitten Sie den Agenten, einen Leistungsbericht zu erstellen.</p>
             </div>
           ) : (
             [...MOCK_DB.reports].reverse().map((report, i) => (
@@ -576,12 +576,12 @@ const ReportsView = ({ onAction }: { onAction: (msg?: string) => void }) => {
                   <span className="text-[12px] font-medium bg-white text-zinc-600 px-4 py-1.5 rounded-full border border-black/5">{report.year}</span>
                 </div>
                 <div className="p-10">
-                  <h4 className="font-semibold text-zinc-900 mb-3 text-[15px]">Executive Summary</h4>
+                  <h4 className="font-semibold text-zinc-900 mb-3 text-[15px]">Zusammenfassung</h4>
                   <p className="text-zinc-500 leading-relaxed mb-10 font-medium text-[14px]">{report.executive_summary}</p>
                   
                   {report.metrics && report.metrics.length > 0 && (
                     <div className="mb-12">
-                      <h4 className="font-semibold text-zinc-900 mb-5 text-[15px]">Key Performance Metrics</h4>
+                      <h4 className="font-semibold text-zinc-900 mb-5 text-[15px]">Wichtige Leistungskennzahlen</h4>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                         {report.metrics.filter((m: any) => m.value !== 'N/A' && m.value !== 'n/a').map((m: any, idx: number) => (
                           <div key={idx} className="p-6 bg-zinc-50/50 border border-black/[0.04] rounded-3xl">
@@ -608,7 +608,7 @@ const ReportsView = ({ onAction }: { onAction: (msg?: string) => void }) => {
 
                   {report.detailed_analysis && (
                     <div className="mb-12 border-t border-black/[0.04] pt-10">
-                      <h4 className="font-semibold text-zinc-900 mb-5 text-[15px]">Detailed Analysis</h4>
+                      <h4 className="font-semibold text-zinc-900 mb-5 text-[15px]">Detaillierte Analyse</h4>
                       <div className="markdown-body text-zinc-500 text-[14px] leading-relaxed font-medium">
                         <ReactMarkdown>{report.detailed_analysis}</ReactMarkdown>
                       </div>
@@ -617,7 +617,7 @@ const ReportsView = ({ onAction }: { onAction: (msg?: string) => void }) => {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10 border-t border-black/[0.04] pt-10">
                     <div>
-                      <h4 className="font-semibold text-zinc-900 mb-5 text-[15px]">Key Insights</h4>
+                      <h4 className="font-semibold text-zinc-900 mb-5 text-[15px]">Wichtige Erkenntnisse</h4>
                       <div className="grid gap-4">
                         {report.key_insights?.map((insight: string, idx: number) => (
                           <div key={idx} className="bg-zinc-50/50 p-5 rounded-[24px] flex items-start gap-4 border border-black/[0.02]">
@@ -632,7 +632,7 @@ const ReportsView = ({ onAction }: { onAction: (msg?: string) => void }) => {
 
                     {report.recommendations && (
                       <div>
-                        <h4 className="font-semibold text-zinc-900 mb-5 text-[15px]">Strategic Recommendations</h4>
+                        <h4 className="font-semibold text-zinc-900 mb-5 text-[15px]">Strategische Empfehlungen</h4>
                         <div className="grid gap-4">
                           {report.recommendations?.map((rec: string, idx: number) => (
                             <div key={idx} className="bg-zinc-900 text-white p-5 rounded-[24px] flex items-start gap-4">
@@ -667,17 +667,17 @@ const DashboardsView = ({ onAction }: { onAction: (msg?: string) => void }) => {
         <div className="flex justify-between items-end mb-8 pl-2">
           <div>
             <h2 className="text-3xl font-bold text-zinc-900 tracking-tight">Dashboards</h2>
-            <p className="text-zinc-500 mt-1 text-[15px] font-medium">Visual metrics and sales performance.</p>
+            <p className="text-zinc-500 mt-1 text-[15px] font-medium">Visuelle Metriken und Verkaufsleistung.</p>
           </div>
           <button onClick={handleGenerateDashboard} className="px-5 py-2.5 bg-black text-white rounded-full text-[13px] font-medium hover:bg-zinc-800 transition-colors">
-            + Create dashboard
+            + Dashboard erstellen
           </button>
         </div>
 
         <div className="grid gap-6">
           {MOCK_DB.dashboards.length === 0 ? (
             <div className="text-center py-20 bg-white rounded-3xl border border-black/[0.04]">
-              <p className="text-zinc-400 font-medium">No dashboards created yet. Ask the agent to create a dashboard for sales metrics.</p>
+              <p className="text-zinc-400 font-medium">Noch keine Dashboards erstellt. Bitten Sie den Agenten, ein Dashboard für Verkaufsmetriken zu erstellen.</p>
             </div>
           ) : (
             [...MOCK_DB.dashboards].reverse().map((dashboard, i) => {
@@ -712,7 +712,7 @@ const DashboardsView = ({ onAction }: { onAction: (msg?: string) => void }) => {
                     {/* Main Chart */}
                     <div className="lg:col-span-2 bg-white p-8 rounded-[32px] border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col">
                       <h4 className="font-semibold text-[17px] text-zinc-900 tracking-tight mb-1">{dashboard.main_chart?.title}</h4>
-                      <p className="text-[10px] text-zinc-400 font-medium mb-8 uppercase tracking-wider">{dashboard.main_chart?.type} Chart</p>
+                      <p className="text-[10px] text-zinc-400 font-medium mb-8 uppercase tracking-wider">{dashboard.main_chart?.type} Diagramm</p>
                       
                       <div className="flex-1 flex flex-col justify-start gap-5">
                         {dashboard.main_chart?.data?.map((metric: any, idx: number) => {
@@ -740,7 +740,7 @@ const DashboardsView = ({ onAction }: { onAction: (msg?: string) => void }) => {
                       {/* Secondary Chart */}
                       <div className="bg-white p-8 rounded-[32px] border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex-1">
                         <h4 className="font-semibold text-[15px] text-zinc-900 tracking-tight mb-1">{dashboard.secondary_chart?.title}</h4>
-                        <p className="text-[10px] text-zinc-400 font-medium mb-6 uppercase tracking-wider">{dashboard.secondary_chart?.type} Chart</p>
+                        <p className="text-[10px] text-zinc-400 font-medium mb-6 uppercase tracking-wider">{dashboard.secondary_chart?.type} Diagramm</p>
                         
                         <div className="flex flex-col gap-4">
                           {dashboard.secondary_chart?.data?.map((metric: any, idx: number) => {
@@ -766,7 +766,7 @@ const DashboardsView = ({ onAction }: { onAction: (msg?: string) => void }) => {
 
                       {/* Recent Activity */}
                       <div className="bg-white p-8 rounded-[32px] border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex-1">
-                        <h4 className="font-semibold text-[15px] text-zinc-900 tracking-tight mb-6">Quick Insights</h4>
+                        <h4 className="font-semibold text-[15px] text-zinc-900 tracking-tight mb-6">Kurze Erkenntnisse</h4>
                         <div className="flex flex-col gap-4">
                           {dashboard.recent_activity?.map((activity: any, idx: number) => (
                             <div key={idx} className="flex items-start gap-3">
@@ -793,10 +793,10 @@ const DashboardsView = ({ onAction }: { onAction: (msg?: string) => void }) => {
 const BottomNav = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (t: string) => void }) => {
   const menuItems = [
     { id: 'chat', label: 'Chat', icon: Bot },
-    { id: 'dashboards', label: 'Stats', icon: Activity },
-    { id: 'reports', label: 'Reports', icon: Search },
-    { id: 'orders', label: 'Orders', icon: Database },
-    { id: 'reviews', label: 'Reviews', icon: Briefcase },
+    { id: 'dashboards', label: 'Statistiken', icon: Activity },
+    { id: 'reports', label: 'Berichte', icon: Search },
+    { id: 'orders', label: 'Bestellungen', icon: Database },
+    { id: 'reviews', label: 'Bewertungen', icon: Briefcase },
   ];
 
   return (
@@ -864,7 +864,7 @@ export default function App() {
       {/* Mobile Header */}
       <div className="md:hidden flex items-center px-6 pt-6 pb-2 shrink-0">
         <button onClick={() => window.location.reload()} className="text-2xl font-bold text-black tracking-tight text-left hover:opacity-70 transition-opacity">
-          Retail Agent Dashboard
+          Retail Agenten-Dashboard
         </button>
       </div>
 
@@ -888,7 +888,7 @@ export default function App() {
         </div>
         
         <div className="mt-4 px-4 text-[11px] text-zinc-400 text-center md:text-right shrink-0">
-          Data via <a href="https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce" target="_blank" className="underline hover:text-zinc-600 font-medium">Olist E-Commerce Dataset</a>
+          Daten via <a href="https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce" target="_blank" className="underline hover:text-zinc-600 font-medium">Olist E-Commerce Dataset</a>
         </div>
       </main>
 
