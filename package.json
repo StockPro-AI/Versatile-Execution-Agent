@@ -11,9 +11,13 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.59",
+    "@ai-sdk/mistral": "^3.0.29",
+    "@ai-sdk/openai": "^3.0.51",
     "@google/genai": "^1.43.0",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
+    "ai": "^6.0.150",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.3",
@@ -24,7 +28,8 @@
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
     "tailwind-merge": "^3.5.0",
-    "vite": "^6.2.0"
+    "vite": "^6.2.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

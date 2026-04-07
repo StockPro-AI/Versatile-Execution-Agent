@@ -231,9 +231,13 @@ export interface AgentStep {
   latencyMs?: number;
 }
 
+import { ProviderConfig } from '../contexts/ProviderContext';
+
 export async function sendMessageToAgentStream(
   history: ChatMessage[],
   newMessage: string,
+  providerConfig: ProviderConfig,
+  addCost: (cost: number) => void,
   onUpdate: (data: { history: ChatMessage[], steps: AgentStep[], isDone: boolean, currentText: string }) => void
 ): Promise<void> {
   const sdkHistory = history
@@ -248,9 +252,7 @@ export async function sendMessageToAgentStream(
     { role: "user", parts: [{ text: newMessage }] }
   ];
   
-    const config = {
-    tools: tools,
-    systemInstruction: `Sie sind ein erstklassiger E-Commerce Operations Agent für einen schnell wachsenden Marktplatz. 
+  const systemInstruction = `Sie sind ein erstklassiger E-Commerce Operations Agent für einen schnell wachsenden Marktplatz. 
       Ihr Ziel ist es, selbstständig Verkaufsdaten zu analysieren, Kundenservice-Aufgaben zu bearbeiten, Bestellungen zu verwalten und Berichte zu erstellen.
       
       Fähigkeiten:
@@ -273,7 +275,11 @@ export async function sendMessageToAgentStream(
       - Erklären Sie kurz, was Sie tun (z. B. "Analysiere Q3-Verkaufsdaten...", "Entwerfe Kundenantwort...", "Bearbeite Erstattung...").
       - Wenn Sie generate_yearly_report oder create_operations_dashboard aufrufen, geben Sie danach keinen Konversationstext mehr aus.
       - ANTWORTEN SIE IMMER AUF DEUTSCH.
-      `,
+      `;
+
+  const configParams = {
+    tools: tools,
+    systemInstruction: systemInstruction,
   };
 
   let currentHistory = [...history];
@@ -297,14 +303,82 @@ export async function sendMessageToAgentStream(
   };
 
   try {
+    if (providerConfig.type !== 'gemini') {
+      // Fallback for non-Gemini providers (basic text completion without tools for now to ensure stability)
+      // In a full implementation, we would map Gemini tools to OpenAI format and handle tool_calls.
+      let url = '';
+      let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      let apiKey = providerConfig.apiKey;
+
+      if (providerConfig.type === 'openai') {
+        url = 'https://api.openai.com/v1/chat/completions';
+        headers['Authorization'] = `Bearer ${apiKey}`;
+      } else if (providerConfig.type === 'mistral') {
+        url = 'https://api.mistral.ai/v1/chat/completions';
+        headers['Authorization'] = `Bearer ${apiKey}`;
+      } else if (providerConfig.type === 'openrouter') {
+        url = 'https://openrouter.ai/api/v1/chat/completions';
+        headers['Authorization'] = `Bearer ${apiKey}`;
+      } else if (providerConfig.type === 'ollama') {
+        if (providerConfig.cloudModelEnabled && providerConfig.cloudApiKey) {
+          url = 'https://api.openai.com/v1/chat/completions';
+          headers['Authorization'] = `Bearer ${providerConfig.cloudApiKey}`;
+        } else {
+          url = `${providerConfig.baseUrl || 'http://localhost:11434'}/v1/chat/completions`;
+        }
+      } else if (providerConfig.type === 'lmstudio') {
+        url = `${providerConfig.baseUrl || 'http://localhost:1234'}/v1/chat/completions`;
+      }
+
+      const openAIMessages = [
+        { role: 'system', content: systemInstruction },
+        ...currentHistory.map(h => ({
+          role: h.role === 'model' ? 'assistant' : 'user',
+          content: h.parts[0].text || ''
+        }))
+      ];
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model: providerConfig.selectedModel || 'gpt-3.5-turbo',
+          messages: openAIMessages,
+          stream: false
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const text = data.choices[0]?.message?.content || '';
+      
+      // Estimate cost (very rough estimate)
+      addCost(0.001);
+
+      currentHistory.push({
+        role: "model",
+        parts: [{ text }],
+        timestamp: new Date(),
+        latencyMs: performance.now() - totalStartTime
+      });
+
+      notify(true, text);
+      return;
+    }
+
+    // Gemini Implementation
+    const aiClient = providerConfig.apiKey ? new GoogleGenAI({ apiKey: providerConfig.apiKey }) : ai;
     let lastAggregatedParts: any[] = [];
     while (keepGoing && stepCount < maxSteps) {
       stepCount++;
       
-      let responseStream = await ai.models.generateContentStream({
-        model: MODEL_NAME,
+      let responseStream = await aiClient.models.generateContentStream({
+        model: providerConfig.selectedModel || MODEL_NAME,
         contents: contents,
-        config: config
+        config: configParams
       });
 
       let turnText = "";
@@ -343,6 +417,9 @@ export async function sendMessageToAgentStream(
       lastAggregatedParts = aggregatedParts;
 
       const turnEndTime = performance.now();
+      
+      // Estimate cost for Gemini (very rough estimate)
+      addCost(0.0005);
 
       if (hasAddedTextStep) {
         const stepIndex = steps.findIndex(s => s.id === textStepId);

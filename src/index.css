@@ -1,1 +1,36 @@
 @import "tailwindcss";
+
+@theme {
+  --color-dark-bg: #0a0a0c;
+  --color-dark-panel: rgba(20, 20, 25, 0.6);
+  --color-dark-panel-hover: rgba(30, 30, 35, 0.8);
+  --color-gold: #d4af37;
+  --color-silver: #c0c0c0;
+  --color-glow: rgba(212, 175, 55, 0.15);
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)];
+  }
+  .glass-panel-light {
+    @apply bg-white/5 backdrop-blur-lg border border-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.3)];
+  }
+  .text-glow {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  }
+  .text-glow-gold {
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+  }
+  .border-glow {
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.15), inset 0 0 10px rgba(212, 175, 55, 0.05);
+  }
+}
+
+body {
+  @apply bg-[#0a0a0c] text-zinc-300;
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(212, 175, 55, 0.03), transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(192, 192, 192, 0.03), transparent 25%);
+  background-attachment: fixed;
+}
