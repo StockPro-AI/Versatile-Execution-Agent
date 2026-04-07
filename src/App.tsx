@@ -430,30 +430,88 @@ const ChatInterface = ({
 };
 
 const OrdersView = ({ onAction }: { onAction: (msg?: string) => void }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [orderToRefund, setOrderToRefund] = useState<any>(null);
+
+  const filteredOrders = MOCK_DB.orders.filter(order => 
+    order.order_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    order.customer_id.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleRefundConfirm = () => {
+    if (orderToRefund) {
+      onAction(`Veranlasse eine Rückerstattung für die Bestellung ${orderToRefund.order_id} in Höhe von ${orderToRefund.amount} wegen 'Kundenwunsch'.`);
+      setOrderToRefund(null);
+    }
+  };
+
   return (
-  <div className="p-4 md:p-8 h-full overflow-y-auto">
+  <div className="p-4 md:p-8 h-full overflow-y-auto relative">
+    {/* Modal */}
+    <AnimatePresence>
+      {orderToRefund && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-white rounded-3xl p-6 max-w-md w-full shadow-xl border border-black/5"
+          >
+            <h3 className="text-lg font-bold text-zinc-900 mb-2">Rückerstattung bestätigen</h3>
+            <p className="text-zinc-600 text-sm mb-6">
+              Möchten Sie den Status der Bestellung <strong>{orderToRefund.order_id}</strong> wirklich auf 'Refunded' ändern?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setOrderToRefund(null)}
+                className="px-4 py-2 rounded-full text-sm font-medium text-zinc-600 hover:bg-zinc-100 transition-colors"
+              >
+                Abbrechen
+              </button>
+              <button 
+                onClick={handleRefundConfirm}
+                className="px-4 py-2 rounded-full text-sm font-medium bg-black text-white hover:bg-zinc-800 transition-colors"
+              >
+                Bestätigen
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+
     <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex justify-between items-end mb-8 pl-2">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8 pl-2">
         <div>
           <h2 className="text-3xl font-bold text-zinc-900 tracking-tight">Bestelldatenbank</h2>
           <p className="text-zinc-500 mt-1 text-[15px] font-medium">Verwalten und überwachen Sie alle aktuellen Bestellungen.</p>
         </div>
+        <div className="relative w-full md:w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
+          <input 
+            type="text"
+            placeholder="Suchen nach ID oder Kunde..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-white border border-black/10 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-black/5 transition-all"
+          />
+        </div>
       </div>
       
       <div className="grid gap-4">
-        {MOCK_DB.orders.length === 0 ? (
+        {filteredOrders.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-black/[0.04]">
             <p className="text-zinc-400 font-medium">Keine Bestellungen gefunden.</p>
           </div>
         ) : (
-          MOCK_DB.orders.map((order, i) => (
-            <div key={i} className="bg-white p-6 rounded-3xl border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex justify-between items-center transition-all hover:border-black/10">
+          filteredOrders.map((order, i) => (
+            <div key={i} className="bg-white p-6 rounded-3xl border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all hover:border-black/10">
               <div>
                 <div className="flex items-center gap-3">
                   <h3 className="font-semibold text-lg text-zinc-900">{order.order_id}</h3>
                   <span className="px-3 py-1 bg-zinc-50 rounded-full text-xs font-medium text-zinc-600 border border-black/5">{order.city}</span>
                 </div>
-                <div className="mt-4 flex gap-8 text-sm text-zinc-600">
+                <div className="mt-4 flex flex-wrap gap-6 md:gap-8 text-sm text-zinc-600">
                   <div className="flex flex-col">
                     <span className="text-[11px] text-zinc-400 font-medium uppercase tracking-wider mb-1">Kunde</span>
                     <strong className="text-zinc-900 text-[15px] font-semibold">{order.customer_id}</strong>
@@ -474,15 +532,25 @@ const OrdersView = ({ onAction }: { onAction: (msg?: string) => void }) => {
                   )}
                 </div>
               </div>
-              <span className={cn(
-                "px-4 py-1.5 text-xs font-medium rounded-full border",
-                order.status === 'Delivered' ? "bg-emerald-50 border-emerald-200 text-emerald-700" : 
-                order.status === 'Delayed' ? "bg-red-50 border-red-200 text-red-700" :
-                order.status === 'Refunded' ? "bg-zinc-100 border-black/10 text-zinc-600" :
-                "bg-white border-black/10 text-zinc-900"
-              )}>
-                {order.status}
-              </span>
+              <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+                <span className={cn(
+                  "px-4 py-1.5 text-xs font-medium rounded-full border",
+                  order.status === 'Delivered' ? "bg-emerald-50 border-emerald-200 text-emerald-700" : 
+                  order.status === 'Delayed' ? "bg-red-50 border-red-200 text-red-700" :
+                  order.status === 'Refunded' ? "bg-zinc-100 border-black/10 text-zinc-600" :
+                  "bg-white border-black/10 text-zinc-900"
+                )}>
+                  {order.status}
+                </span>
+                {order.status !== 'Refunded' && (
+                  <button 
+                    onClick={() => setOrderToRefund(order)}
+                    className="px-4 py-1.5 text-xs font-medium rounded-full bg-white border border-black/10 text-zinc-600 hover:text-black hover:border-black/20 transition-colors"
+                  >
+                    Bearbeiten
+                  </button>
+                )}
+              </div>
             </div>
           ))
         )}
@@ -493,25 +561,53 @@ const OrdersView = ({ onAction }: { onAction: (msg?: string) => void }) => {
 };
 
 const ReviewsView = ({ onAction }: { onAction: (msg?: string) => void }) => {
+  const [sortBy, setSortBy] = useState<"date_desc" | "date_asc" | "score_desc" | "score_asc">("date_desc");
+
+  const sortedReviews = [...(MOCK_DB.reviews || [])].sort((a, b) => {
+    if (sortBy === "date_desc") {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    } else if (sortBy === "date_asc") {
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    } else if (sortBy === "score_desc") {
+      return b.score - a.score;
+    } else if (sortBy === "score_asc") {
+      return a.score - b.score;
+    }
+    return 0;
+  });
+
   return (
   <div className="p-4 md:p-8 h-full overflow-y-auto">
     <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex justify-between items-end mb-8 pl-2">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8 pl-2">
         <div>
           <h2 className="text-3xl font-bold text-zinc-900 tracking-tight">Kundenbewertungen</h2>
           <p className="text-zinc-500 mt-1 text-[15px] font-medium">Kundenfeedback überwachen und verwalten.</p>
         </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-zinc-500">Sortieren nach:</span>
+          <select 
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="bg-white border border-black/10 rounded-full px-4 py-2 text-sm font-medium text-zinc-700 focus:outline-none focus:ring-2 focus:ring-black/5"
+          >
+            <option value="date_desc">Neueste zuerst</option>
+            <option value="date_asc">Älteste zuerst</option>
+            <option value="score_desc">Höchste Bewertung</option>
+            <option value="score_asc">Niedrigste Bewertung</option>
+          </select>
+        </div>
       </div>
 
       <div className="grid gap-4">
-        {MOCK_DB.reviews?.length === 0 ? (
+        {sortedReviews.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-black/[0.04]">
             <p className="text-zinc-400 font-medium">Keine Bewertungen gefunden.</p>
           </div>
         ) : (
-          MOCK_DB.reviews?.map((review, i) => (
-            <div key={i} className="bg-white p-6 rounded-3xl border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex justify-between items-start transition-all hover:border-black/10">
-              <div className="flex gap-5 max-w-[80%]">
+          sortedReviews.map((review, i) => (
+            <div key={i} className="bg-white p-6 rounded-3xl border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col md:flex-row justify-between items-start gap-4 transition-all hover:border-black/10">
+              <div className="flex gap-5 max-w-full md:max-w-[80%]">
                 <div className="w-12 h-12 bg-zinc-50 rounded-full flex items-center justify-center border border-black/5 shrink-0 mt-1">
                   <User className="text-zinc-400" size={18} />
                 </div>
@@ -527,13 +623,13 @@ const ReviewsView = ({ onAction }: { onAction: (msg?: string) => void }) => {
                     ))}
                   </div>
                   <p className="text-zinc-700 text-[15px] leading-relaxed mb-3">"{review.text}"</p>
-                  <div className="flex gap-4 text-[12px] font-medium">
+                  <div className="flex flex-wrap gap-4 text-[12px] font-medium">
                     <span className="flex items-center gap-1.5 text-zinc-500 bg-zinc-50 px-3 py-1 rounded-full border border-black/5">Bestellung: <strong className="text-zinc-800">{review.order_id}</strong></span>
                     <span className="flex items-center gap-1.5 text-zinc-500 bg-zinc-50 px-3 py-1 rounded-full border border-black/5">Kategorie: <strong className="text-zinc-800 capitalize">{review.product_category}</strong></span>
                   </div>
                 </div>
               </div>
-              <button onClick={() => onAction(`Entwerfe eine Kundenantwort für die Bewertung ${review.review_id} von ${review.customer_id}. Biete eine Lösung an.`)} className="px-4 py-2 text-[12px] font-medium rounded-full bg-white border border-black/10 text-zinc-600 hover:text-black hover:border-black/20 transition-colors">
+              <button onClick={() => onAction(`Entwerfe eine Kundenantwort für die Bewertung ${review.review_id} von ${review.customer_id}. Biete eine Lösung an.`)} className="px-4 py-2 text-[12px] font-medium rounded-full bg-white border border-black/10 text-zinc-600 hover:text-black hover:border-black/20 transition-colors whitespace-nowrap">
                 Antwort entwerfen
               </button>
             </div>
