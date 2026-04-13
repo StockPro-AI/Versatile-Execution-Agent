@@ -273,6 +273,7 @@ export function normalizeError(error: any, provider: string): ProviderError {
 }
 
 import { ProviderConfig } from '../contexts/ProviderContext';
+import { calculateCost } from './pricing';
 
 export async function sendMessageToAgentStream(
   history: ChatMessage[],
@@ -404,8 +405,9 @@ export async function sendMessageToAgentStream(
       const data = await response.json();
       const text = data.choices[0]?.message?.content || '';
       
-      // Estimate cost (very rough estimate)
-      addCost(0.001);
+      const usage = data.usage;
+      const cost = calculateCost(providerConfig.selectedModel || 'gpt-3.5-turbo', usage, providerConfig.type);
+      addCost(cost);
 
       currentHistory.push({
         role: "model",
@@ -467,8 +469,18 @@ export async function sendMessageToAgentStream(
 
       const turnEndTime = performance.now();
       
-      // Estimate cost for Gemini (very rough estimate)
-      addCost(0.0005);
+      // Calculate cost from usage metadata
+      const usageMetadata = lastChunkResponse?.usageMetadata;
+      if (usageMetadata) {
+        const cost = calculateCost(providerConfig.selectedModel || MODEL_NAME, {
+          prompt_tokens: usageMetadata.promptTokenCount,
+          completion_tokens: usageMetadata.candidatesTokenCount
+        }, providerConfig.type);
+        addCost(cost);
+      } else {
+        // Fallback if no usage metadata
+        addCost(0.0005);
+      }
 
       if (hasAddedTextStep) {
         const stepIndex = steps.findIndex(s => s.id === textStepId);
