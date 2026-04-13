@@ -231,6 +231,47 @@ export interface AgentStep {
   latencyMs?: number;
 }
 
+export type ProviderErrorType = 'rate_limit' | 'auth' | 'timeout' | 'network' | 'unavailable' | 'unknown';
+
+export interface ProviderError extends Error {
+  type: ProviderErrorType;
+  provider: string;
+  userMessage: string;
+}
+
+export function normalizeError(error: any, provider: string): ProviderError {
+  let type: ProviderErrorType = 'unknown';
+  let userMessage = 'Ein unbekannter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.';
+
+  const errStr = error?.message?.toLowerCase() || error?.toString().toLowerCase() || '';
+  const status = error?.status || error?.response?.status;
+
+  if (status === 429 || errStr.includes('rate limit') || errStr.includes('too many requests') || errStr.includes('quota') || errStr.includes('429')) {
+    type = 'rate_limit';
+    userMessage = 'Das API-Limit wurde erreicht. Bitte warten Sie einen Moment und versuchen Sie es erneut.';
+  } else if (status === 401 || status === 403 || errStr.includes('api key') || errStr.includes('unauthorized') || errStr.includes('forbidden') || errStr.includes('authentication') || errStr.includes('401') || errStr.includes('403')) {
+    type = 'auth';
+    userMessage = 'API-Schlüssel ungültig oder fehlende Berechtigung. Bitte überprüfen Sie Ihre Einstellungen im API Manager.';
+  } else if (status === 408 || errStr.includes('timeout') || errStr.includes('timed out')) {
+    type = 'timeout';
+    userMessage = 'Die Anfrage hat zu lange gedauert (Timeout). Bitte versuchen Sie es erneut.';
+  } else if (errStr.includes('fetch failed') || errStr.includes('network') || errStr.includes('econnrefused') || errStr.includes('offline') || errStr.includes('failed to fetch')) {
+    type = 'network';
+    userMessage = 'Netzwerkfehler. Bitte überprüfen Sie Ihre Internetverbindung oder ob der lokale Server (z.B. Ollama) läuft.';
+  } else if (status >= 500 || errStr.includes('unavailable') || errStr.includes('bad gateway') || errStr.includes('server error') || errStr.includes('500') || errStr.includes('502') || errStr.includes('503')) {
+    type = 'unavailable';
+    userMessage = 'Der Anbieter ist derzeit nicht erreichbar oder hat Serverprobleme. Bitte versuchen Sie es später erneut.';
+  }
+
+  const normalizedError = new Error(error?.message || 'Unknown error') as ProviderError;
+  normalizedError.type = type;
+  normalizedError.provider = provider;
+  normalizedError.userMessage = userMessage;
+  normalizedError.name = 'ProviderError';
+  
+  return normalizedError;
+}
+
 import { ProviderConfig } from '../contexts/ProviderContext';
 
 export async function sendMessageToAgentStream(
@@ -349,7 +390,15 @@ export async function sendMessageToAgentStream(
       });
 
       if (!response.ok) {
-        throw new Error(`API Error: ${response.statusText}`);
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (e) {
+          errorData = { message: response.statusText };
+        }
+        const error = new Error(errorData.error?.message || errorData.message || response.statusText);
+        (error as any).status = response.status;
+        throw error;
       }
 
       const data = await response.json();
@@ -647,9 +696,14 @@ export async function sendMessageToAgentStream(
 
   } catch (error: any) {
     console.error("Agent Error:", error);
+    const normalizedErr = normalizeError(error, providerConfig.type);
+    
+    // Mark any pending steps as error
+    steps = steps.map(s => s.status === 'pending' || s.status === 'streaming' ? { ...s, status: 'error' } : s);
+
     const errorMsg: ChatMessage = {
       role: "model",
-      parts: [{ text: `Bei der Verarbeitung Ihrer Anfrage ist ein Fehler aufgetreten: ${error?.message || error}. Bitte versuchen Sie es erneut.` }],
+      parts: [{ text: `⚠️ **Fehler (${normalizedErr.provider}):** ${normalizedErr.userMessage}` }],
       timestamp: new Date(),
       latencyMs: performance.now() - totalStartTime,
     };

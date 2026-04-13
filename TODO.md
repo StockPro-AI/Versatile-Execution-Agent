@@ -4,9 +4,9 @@
 - [x] API Manager UI implementieren (Provider, Keys, Modelle).
 - [x] Cost Tracker UI implementieren.
 - [x] Unterstützung für weitere LLM-Provider (OpenAI, Mistral, OpenRouter, Ollama, LM Studio) hinzufügen.
-- [ ] Detaillierte Fehlerbehandlung für API-Rate-Limits und Verbindungsprobleme verbessern.
-- [ ] Ladezustände im Dashboard optimieren.
-- [ ] Tests für die Agenten-Logik hinzufügen.
+- [x] Detaillierte Fehlerbehandlung für API-Rate-Limits und Verbindungsprobleme verbessern.
+- [x] Ladezustände im Dashboard optimieren.
+- [x] Tests für die Agenten-Logik hinzufügen.
 
 ## Langfristig
 - [ ] Backend-Integration für echte Datenbankanbindung (anstelle von `data.json`).

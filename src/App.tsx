@@ -382,13 +382,13 @@ const ChatInterface = ({
               </div>
               <p className="font-medium text-zinc-400">Wie kann ich Ihnen heute helfen?</p>
               <div className="flex flex-wrap justify-center gap-3 w-full max-w-md">
-                <button onClick={() => onSendMessage("Schreibe einen Bericht über die Verkäufe in São Paulo im Jahr 2017.")} className="px-5 py-2.5 bg-white/5 hover:bg-white/10 rounded-full transition-all border border-white/10 text-zinc-300 font-medium text-[13px]">
+                <button disabled={isProcessing} onClick={() => onSendMessage("Schreibe einen Bericht über die Verkäufe in São Paulo im Jahr 2017.")} className="px-5 py-2.5 bg-white/5 hover:bg-white/10 rounded-full transition-all border border-white/10 text-zinc-300 font-medium text-[13px] disabled:opacity-50 disabled:cursor-not-allowed">
                 Schreibe einen Bericht über die Verkäufe in São Paulo im Jahr 2017
                 </button>
-                <button onClick={() => onSendMessage("Erstelle ein Dashboard über unsere wichtigsten Märkte")} className="px-5 py-2.5 bg-white/5 hover:bg-white/10 rounded-full transition-all border border-white/10 text-zinc-300 font-medium text-[13px]">
+                <button disabled={isProcessing} onClick={() => onSendMessage("Erstelle ein Dashboard über unsere wichtigsten Märkte")} className="px-5 py-2.5 bg-white/5 hover:bg-white/10 rounded-full transition-all border border-white/10 text-zinc-300 font-medium text-[13px] disabled:opacity-50 disabled:cursor-not-allowed">
                 Erstelle ein Dashboard über unsere wichtigsten Märkte
                 </button>
-                <button onClick={() => onSendMessage("Finde die neueste 1-Sterne-Bewertung und erstatte die Bestellung")} className="px-5 py-2.5 bg-white/5 hover:bg-white/10 rounded-full transition-all border border-white/10 text-zinc-300 font-medium text-[13px]">
+                <button disabled={isProcessing} onClick={() => onSendMessage("Finde die neueste 1-Sterne-Bewertung und erstatte die Bestellung")} className="px-5 py-2.5 bg-white/5 hover:bg-white/10 rounded-full transition-all border border-white/10 text-zinc-300 font-medium text-[13px] disabled:opacity-50 disabled:cursor-not-allowed">
                 Finde die neueste 1-Sterne-Bewertung und erstatte die Bestellung
                 </button>
               </div>
@@ -587,13 +587,13 @@ const ChatInterface = ({
 
           {history.length > 0 && (
             <div className="flex flex-wrap justify-center gap-2 mt-4 w-full">
-              <button onClick={() => onSendMessage("Schreibe einen Bericht über die Verkäufe in São Paulo im Jahr 2017.")} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full transition-all border border-white/10 text-zinc-400 font-medium text-[12px]">
+              <button disabled={isProcessing} onClick={() => onSendMessage("Schreibe einen Bericht über die Verkäufe in São Paulo im Jahr 2017.")} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full transition-all border border-white/10 text-zinc-400 font-medium text-[12px] disabled:opacity-50 disabled:cursor-not-allowed">
               Schreibe einen Bericht über die Verkäufe in São Paulo im Jahr 2017
               </button>
-              <button onClick={() => onSendMessage("Erstelle ein Dashboard über unsere wichtigsten Märkte")} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full transition-all border border-white/10 text-zinc-400 font-medium text-[12px]">
+              <button disabled={isProcessing} onClick={() => onSendMessage("Erstelle ein Dashboard über unsere wichtigsten Märkte")} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full transition-all border border-white/10 text-zinc-400 font-medium text-[12px] disabled:opacity-50 disabled:cursor-not-allowed">
                 Erstelle ein Dashboard über unsere wichtigsten Märkte
               </button>
-              <button onClick={() => onSendMessage("Finde die neueste 1-Sterne-Bewertung und erstatte die Bestellung.")} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full transition-all border border-white/10 text-zinc-400 font-medium text-[12px]">
+              <button disabled={isProcessing} onClick={() => onSendMessage("Finde die neueste 1-Sterne-Bewertung und erstatte die Bestellung.")} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full transition-all border border-white/10 text-zinc-400 font-medium text-[12px] disabled:opacity-50 disabled:cursor-not-allowed">
               Finde die neueste 1-Sterne-Bewertung und erstatte die Bestellung
               </button>
             </div>
