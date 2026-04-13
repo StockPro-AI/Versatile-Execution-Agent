@@ -19,7 +19,9 @@ import {
   MoreHorizontal,
   Settings,
   CreditCard,
-  X
+  X,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { cn } from './lib/utils';
@@ -173,7 +175,7 @@ const ProviderManagerModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: (
   );
 };
 
-const Sidebar = ({ activeTab, setActiveTab, onOpenApiManager }: { activeTab: string, setActiveTab: (t: string) => void, onOpenApiManager: () => void }) => {
+const Sidebar = ({ activeTab, setActiveTab, onOpenApiManager, isCollapsed, onToggle }: { activeTab: string, setActiveTab: (t: string) => void, onOpenApiManager: () => void, isCollapsed: boolean, onToggle: () => void }) => {
   const menuItems = [
     { id: 'chat', label: 'Agenten-Chat', icon: Bot },
     { id: 'dashboards', label: 'Dashboards', icon: Activity },
@@ -183,38 +185,52 @@ const Sidebar = ({ activeTab, setActiveTab, onOpenApiManager }: { activeTab: str
   ];
 
   return (
-    <div className="hidden md:flex w-[280px] flex-col h-screen pt-8 pb-6 pl-8 pr-4 glass-panel-light border-r border-white/5">
-      <div className="mb-10 px-6 flex items-center">
-        <button onClick={() => window.location.reload()} className="text-2xl font-bold text-white text-glow tracking-tight text-left hover:opacity-70 transition-opacity">
-          Retail Agenten-Dashboard
+    <div className={cn(
+      "hidden md:flex flex-col h-screen pt-8 pb-6 glass-panel-light border-r border-white/5 transition-all duration-300 ease-in-out shrink-0",
+      isCollapsed ? "w-[80px] px-3" : "w-[280px] pl-8 pr-4"
+    )}>
+      <div className={cn("mb-10 flex items-center", isCollapsed ? "justify-center" : "justify-between px-2")}>
+        {!isCollapsed && (
+          <button onClick={() => window.location.reload()} className="text-xl font-bold text-white text-glow tracking-tight text-left hover:opacity-70 transition-opacity truncate">
+            Retail Agent
+          </button>
+        )}
+        <button onClick={onToggle} className="p-2 rounded-xl hover:bg-white/10 text-zinc-400 hover:text-white transition-colors flex-shrink-0">
+          {isCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
         </button>
       </div>
       
-      <nav className="flex-1 space-y-1.5 pr-2">
+      <nav className={cn("flex-1 space-y-1.5", isCollapsed ? "" : "pr-2")}>
         {menuItems.map((item) => (
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
+            title={isCollapsed ? item.label : undefined}
             className={cn(
-              "w-full flex items-center gap-3 px-4 py-3 rounded-full text-[14px] font-medium transition-all",
+              "w-full flex items-center rounded-full text-[14px] font-medium transition-all",
+              isCollapsed ? "justify-center p-3" : "gap-3 px-4 py-3",
               activeTab === item.id 
                 ? "bg-white/10 text-white shadow-sm border border-white/10" 
                 : "text-zinc-500 hover:bg-white/5 hover:text-zinc-300"
             )}
           >
-            <item.icon size={16} strokeWidth={activeTab === item.id ? 2.5 : 2} className={activeTab === item.id ? "text-gold" : ""} />
-            {item.label}
+            <item.icon size={16} strokeWidth={activeTab === item.id ? 2.5 : 2} className={activeTab === item.id ? "text-gold shrink-0" : "shrink-0"} />
+            {!isCollapsed && <span className="truncate">{item.label}</span>}
           </button>
         ))}
       </nav>
 
-      <div className="mt-auto pr-2">
+      <div className={cn("mt-auto", isCollapsed ? "" : "pr-2")}>
         <button 
           onClick={onOpenApiManager}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-full text-[14px] font-medium text-zinc-400 hover:bg-white/5 hover:text-white transition-all border border-transparent hover:border-white/10"
+          title={isCollapsed ? "API Manager" : undefined}
+          className={cn(
+            "w-full flex items-center rounded-full text-[14px] font-medium text-zinc-400 hover:bg-white/5 hover:text-white transition-all border border-transparent hover:border-white/10",
+            isCollapsed ? "justify-center p-3" : "gap-3 px-4 py-3"
+          )}
         >
-          <Settings size={16} />
-          API Manager
+          <Settings size={16} className="shrink-0" />
+          {!isCollapsed && <span className="truncate">API Manager</span>}
         </button>
       </div>
     </div>
@@ -1083,6 +1099,7 @@ export default function App() {
   const [agentSteps, setAgentSteps] = useState<AgentStep[]>([]);
   const [streamingText, setStreamingText] = useState("");
   const [isApiManagerOpen, setIsApiManagerOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const { config, addCost } = useProvider();
 
@@ -1120,7 +1137,13 @@ export default function App() {
       <CostTracker />
       <ProviderManagerModal isOpen={isApiManagerOpen} onClose={() => setIsApiManagerOpen(false)} />
       
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onOpenApiManager={() => setIsApiManagerOpen(true)} />
+      <Sidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        onOpenApiManager={() => setIsApiManagerOpen(true)} 
+        isCollapsed={isSidebarCollapsed}
+        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
       
       {/* Mobile Header */}
       <div className="md:hidden flex items-center px-6 pt-6 pb-2 shrink-0">
